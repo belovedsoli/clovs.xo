@@ -727,7 +727,7 @@
     const custom = member && member.portfolioLink;
     if (custom && custom.trim() !== '') return custom;
     const slug = member && member.slug && member.slug.trim();
-    return slug ? `profile.html#${slug}` : `profile.html?id=${uid}`;
+    return slug ? `#${slug}` : `?id=${uid}`;
   }
 
   async function loadActiveWidget(){
