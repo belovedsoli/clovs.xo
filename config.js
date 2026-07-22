@@ -90,7 +90,7 @@ const MEMBERS = {
     slug: 'astra', tagline: 'ANTI BITCHES', socials: { instagram:'  https://www.instagram.com/die4.777?igsh=dmRudGowa25qdzZk', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'kleeko cute', src:'kleeko.mp3' }, background: 'kleeko.mp4', portfolioLink: ''
   },
   '1505594070565654778': {
-    slug: 'ziye', tagline: 'mind over matter', socials: { instagram:'https://www.instagram.com/_zycl6?igsh=MWR0ZHgxMTc4eXo4bA==', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'oleeko', src:'oleeko.mp3' }, background: 'oleeko.png', portfolioLink: ''
+    slug: 'ziye', tagline: 'mind over matter', socials: { instagram:'https://www.instagram.com/_zycl6?igsh=MWR0ZHgxMTc4eXo4bA==', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'oleeko', src:'sinf.mp3' }, background: 'oleeko.png', portfolioLink: ''
   },
   '1051531791581859960': {
     slug: 'tia', tagline: ' to those who love, will be loved ', socials: { instagram:'https://www.instagram.com/tialucies?igsh=MXVlY3VzZTFxMm45bA== ', tiktok:' https://www.tiktok.com/@poemsandra?_r=1&_t=ZS-98BdMRhQnzA', youtube:'', spotify:'', discord:'' }, music: { name:'tia', src:'tia.mp3' }, background: 'tia.png', portfolioLink: ''
@@ -108,13 +108,13 @@ const MEMBERS = {
     slug: 'sebby', tagline: 'Suck my non existing dick bitch', socials: { instagram:' https://www.instagram.com/h4tefvckboyz?igsh=enR1eHh1bXpmZzZk', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'rleeko', src:'rleeko.mp3' }, background: 'rleeko.png', portfolioLink: ''
   },
   '1418927332982521956': {
-    slug: 'nia', tagline: 'mind over matter', socials: { instagram:'https://www.instagram.com/niaqzs?igsh=bmxicmE0NzI3OHg0', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'nia', src:'nia.mp3' }, background: 'nia.png', portfolioLink: ''
+    slug: 'nia', tagline: 'fear no one.', socials: { instagram:'https://www.instagram.com/niaqzs?igsh=bmxicmE0NzI3OHg0', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'nia', src:'nia.mp3' }, background: 'nia2.png', portfolioLink: ''
   },
   '1090959043780149349': {
    slug: 'nin', tagline: 'better than everybody', socials: { instagram:'https://www.instagram.com/ninis3y?igsh=M3k2dGo4Znl2b285', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'nin', src:'nin.mp3' }, background: 'nin.png', portfolioLink: ''
   },
   '1510211540517916928': {
-    slug: 'alchi', tagline: ' i suck your nipple niggas', socials: { instagram:' https://www.instagram.com/alchialchialchi_?igsh=end1bHQ0bXhzc2Rt', tiktok:': https://www.tiktok.com/@alchialchialchi_?_r=1&_t=ZS-98Bo6EyIcxr', youtube:'', spotify:'', discord:'' }, music: { name:'alchi', src:'alchi.mp3' }, background: '', portfolioLink: ''
+    slug: 'alchi', tagline: ' i suck your nipple niggas', socials: { instagram:' https://www.instagram.com/alchialchialchi_?igsh=end1bHQ0bXhzc2Rt', tiktok:': https://www.tiktok.com/@alchialchialchi_?_r=1&_t=ZS-98Bo6EyIcxr', youtube:'', spotify:'', discord:'' }, music: { name:'alchi', src:'alchi.mp3' }, background: 'alchi.png', portfolioLink: ''
   },
   '1437719585871757443': {
     slug: 'zecko', tagline: 'Fuck all niggas', socials: { instagram:'', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'zecko', src:'zeecko.mp3' }, background: 'zeecko.png', portfolioLink: ''
