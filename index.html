@@ -775,7 +775,7 @@
       const custom = member && member.portfolioLink;
       if (custom && custom.trim() !== '') return custom;
       const slug = member && member.slug && member.slug.trim();
-      return slug ? `clovs_acp.html#${slug}` : `clovs_acp.html?id=${id}`;
+      return `/u#${slug || id}`;
     }
 
     // ===== Navigation =====
