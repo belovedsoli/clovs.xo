@@ -680,6 +680,7 @@
       const rawSlug = (MEMBERS[key].slug || '').replace(/^#/, '').trim();
       if (rawSlug && rawSlug.toLowerCase() === hash.toLowerCase()) return key;
     }
+    if (Object.prototype.hasOwnProperty.call(MEMBERS, hash)) return hash;
     return null;
   }
 
@@ -727,7 +728,7 @@
     const custom = member && member.portfolioLink;
     if (custom && custom.trim() !== '') return custom;
     const slug = member && member.slug && member.slug.trim();
-    return slug ? `#${slug}` : `?id=${uid}`;
+    return `#${slug || uid}`;
   }
 
   async function loadActiveWidget(){
