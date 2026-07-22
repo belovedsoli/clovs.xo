@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>clovs.acp</title>
+  <link rel="icon" href="sicario.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+        --bg: #0a0505;
+        --surface: #140a0a;
+        --text: #fdf5f0;
+        --text-dim: #c5a8a8;
+        --accent: #ff3b3b;
+        --accent-glow: rgba(255, 59, 59, 0.5);
+        --glass: rgba(40, 15, 15, 0.45);
+        --glass-border: rgba(255, 130, 130, 0.2);
+        --radius-sm: 20px;
+        --radius-lg: 32px;
+        --transition: 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        --glow: 0 0 30px rgba(255, 59, 59, 0.6);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+        background:#000;
+        color:var(--text);
+        font-family:'Exo 2', 'Poppins', sans-serif;
+        min-height:100vh;
+        overflow-x:hidden;
+        line-height:1.6;
+        user-select: none;
+        position: relative;
+    }
+
+    /* Animated Background */
+    .bg-animation {
+        position:fixed; inset:0;
+        background:
+            radial-gradient(circle at 15% 25%, #330a0a 0%, transparent 35%),
+            radial-gradient(circle at 75% 65%, #4d0d0d 0%, transparent 45%),
+            radial-gradient(circle at 35% 85%, #1a0000 0%, transparent 40%);
+        opacity:0.7; z-index:-3;
+        animation: bgShift 20s ease infinite;
+    }
+
+    @keyframes bgShift {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        33% { transform: scale(1.1) rotate(120deg); }
+        66% { transform: scale(1.05) rotate(240deg); }
+    }
+
+    /* Liquid Orbs */
+    .liquid-bg {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -3; overflow: hidden; pointer-events: none;
+    }
+
+    .liquid-orb {
+        position: absolute; width: 500px; height: 500px; border-radius: 50%;
+        filter: blur(100px); mix-blend-mode: screen; opacity: 0.25;
+        animation: floatLiquid 14s infinite alternate ease-in-out;
+    }
+
+    .orb-red { background: #ff2020; top: -12%; left: 15%; animation-duration: 12s; }
+    .orb-amber { background: #ff8c00; bottom: 15%; right: -8%; animation-duration: 16s; }
+    .orb-crimson { background: #8b0000; top: 35%; left: -12%; animation-duration: 15s; }
+
+    @keyframes floatLiquid {
+        0% {
+            transform: translateY(0) scale(1) rotate(0deg);
+            border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        }
+        50% {
+            transform: translateY(50px) translateX(40px) scale(1.15) rotate(180deg);
+            border-radius: 58% 42% 38% 62% / 55% 55% 45% 45%;
+        }
+        100% {
+            transform: translateY(-30px) translateX(-30px) scale(0.90) rotate(360deg);
+            border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        }
+    }
+
+    /* Entry overlay */
+    #entry-overlay {
+        position: fixed; inset: 0; background-color: #000;
+        z-index: 9999; display: flex; justify-content: center; align-items: center;
+        opacity: 1; visibility: visible;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+        cursor: pointer;
+    }
+
+    #entry-overlay.fade-out {
+        opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
+    }
+
+    .entry-text {
+        font-family: 'Orbitron', monospace; font-size: 2.5rem; letter-spacing: 6px;
+        color: #00ff41; text-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+        animation: pulseText 1.5s infinite alternate ease-in-out;
+        user-select: none;
+    }
+
+    @keyframes pulseText {
+        0% { opacity: 0.4; text-shadow: 0 0 10px rgba(0, 255, 65, 0.3); transform: scale(0.95); }
+        100% { opacity: 1; text-shadow: 0 0 30px rgba(0, 255, 65, 0.8), 0 0 50px rgba(0, 255, 65, 0.4); transform: scale(1.05); }
+    }
+
+    /* Grain Effect */
+    .grain {
+        position:fixed; inset:0;
+        background-image:
+            radial-gradient(circle at 25% 25%, #fff 1px, transparent 1px),
+            radial-gradient(circle at 75% 75%, #fff 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0.06;
+        pointer-events:none;
+        z-index:-2;
+        animation: grainFloat 3s linear infinite;
+    }
+
+    @keyframes grainFloat {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(1px, 1px); }
+    }
+
+    /* Ember particles */
+    .embers {
+        position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
+    }
+    .ember {
+        position:absolute; bottom:-10px; width:4px; height:4px; border-radius:50%;
+        background:var(--accent); box-shadow:0 0 8px var(--accent), 0 0 16px var(--accent-glow);
+        animation: rise linear infinite;
+        opacity: 0.7;
+    }
+    @keyframes rise {
+        0% { transform: translateY(0) translateX(0); opacity: 0.8; }
+        100% { transform: translateY(-110vh) translateX(var(--drift, 20px)); opacity: 0; }
+    }
+
+    /* Glass Overlay */
+    .glass-overlay {
+        position:fixed; inset:0;
+        background: rgba(255,255,255,0.015);
+        backdrop-filter: blur(25px);
+        z-index:-1;
+    }
+
+    /* Navigation */
+    nav {
+        position:fixed; top:20px; left:50%; transform:translateX(-50%);
+        z-index:1000; background:var(--glass);
+        backdrop-filter:blur(25px) saturate(180%);
+        border:1px solid var(--glass-border); border-radius:999px;
+        padding:12px 32px;
+        font-weight:600; letter-spacing:0.5px;
+    }
+
+    .dock {
+        display:flex; align-items:center; gap:36px; font-size:0.95rem;
+    }
+
+    .dock a {
+        color:var(--text-dim); text-decoration:none;
+        transition:var(--transition); position:relative;
+        padding:8px 16px;
+    }
+
+    .dock a::before {
+        content:''; position:absolute; inset:0; background:var(--accent-glow);
+        border-radius:50px; opacity:0; transition:var(--transition);
+    }
+
+    .dock a:hover::before, .dock a.active::before { opacity:1; }
+
+    .dock a:hover, .dock a.active {
+        color:white; text-shadow:var(--glow); transform:translateY(-2px);
+    }
+
+    /* Sections */
+    section {
+        min-height:100vh; padding:120px 24px 80px;
+        display:flex; flex-direction:column; align-items:center; justify-content:center;
+        opacity:0; transform:translateY(60px);
+        transition:all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    section.active { opacity:1; transform:translateY(0); }
+
+    /* Hero */
+    .hero { text-align:center; max-width:800px; }
+
+    .hero-title {
+        font-family:'Orbitron', monospace;
+        font-weight:900;
+        font-size: 100px;
+        background:linear-gradient(135deg, #fff, var(--accent), #ff8f5e, #ffd44e);
+        background-size:400% 400%;
+        -webkit-background-clip:text; background-clip:text;
+        color:transparent; margin-bottom:2rem;
+        animation: titlePulse 4s ease-in-out infinite;
+        text-shadow:var(--glow);
+    }
+
+    @keyframes titlePulse {
+        0%,100% { filter:brightness(1) hue-rotate(0deg); }
+        50% { filter:brightness(1.3) hue-rotate(-20deg); }
+    }
+
+    .hero-subtitle {
+        font-size: 1.6rem;
+        color:var(--text-dim);
+        font-weight:300;
+        letter-spacing:0.5px;
+        margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+        .hero-title { font-size: 48px; }
+    }
+
+    /* Home HOF preview */
+    .home-hof-preview {
+        width: 100%; max-width: 1400px; margin-top: 3.5rem;
+        display: flex; flex-direction: column; align-items: center;
+    }
+
+    .home-hof-heading {
+        font-family: 'Orbitron', monospace; font-size: 1.4rem; letter-spacing: 2px;
+        color: var(--text); text-shadow: var(--glow); margin-bottom: 0.5rem;
+        display: flex; align-items: center; gap: 12px;
+    }
+
+    .home-hof-heading i { color: var(--accent); }
+
+    .hof-grid-compact {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem; padding: 2rem 0 1rem;
+    }
+
+    .hof-grid-compact .hof-card { padding: 1.5rem 1.25rem; }
+    .hof-grid-compact .profile-display { width: 90px; height: 90px; margin-bottom: 1rem; }
+    .hof-grid-compact .profile-name { font-size: 1.1rem; }
+    .hof-grid-compact .profile-stats { font-size: 0.85rem; }
+
+    .home-hof-more {
+        color: var(--text-dim); text-decoration: none; font-weight: 600;
+        letter-spacing: 0.5px; padding: 10px 24px; border: 1px solid var(--glass-border);
+        border-radius: 999px; background: var(--glass); backdrop-filter: blur(20px);
+        transition: var(--transition); display: inline-flex; align-items: center; gap: 8px;
+    }
+
+    .home-hof-more:hover {
+        color: #fff; text-shadow: var(--glow); border-color: var(--accent);
+        transform: translateY(-2px);
+    }
+
+    /* Hall of Fame Grid */
+    .hof-grid {
+        display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+        gap:3rem; max-width:1400px; width:100%; padding:4rem 0;
+    }
+
+    .hof-card {
+        padding:3rem 2.5rem; text-align:center; position:relative; overflow:hidden;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hof-grid:has(.hof-card:hover) .hof-card:not(:hover) {
+        filter: blur(6px); opacity: 0.25; transform: scale(0.96);
+    }
+
+    /* Clickable wrapper links around cards/pills — display:contents keeps
+       them out of the grid/flex box tree so existing layout & hover
+       selectors above still work exactly as before. */
+    .hof-card-link, .pill-link {
+        display: contents;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .profile-display {
+        position:relative; width:140px; height:140px; margin:0 auto 2rem;
+        border-radius:50%; overflow:hidden; border:4px solid var(--glass-border);
+    }
+
+    .profile-avatar {
+        width:100%; height:100%; object-fit:cover;
+        transition:transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hof-card:hover .profile-avatar { transform:scale(1.1) rotate(5deg); }
+
+    .status-ring {
+        position:absolute; bottom:12px; right:2px; width:12px; height:12px;
+        border-radius:50%; border:4px solid var(--bg);
+    }
+
+    .status-ring.online { background:#3ba55c; box-shadow:0 0 20px #3ba55c; }
+    .status-ring.idle { background:#faa61a; box-shadow:0 0 20px #faa61a; }
+    .status-ring.dnd { background:#ed4245; box-shadow:0 0 20px #ed4245; }
+    .status-ring.offline { background:#747f8d; box-shadow:0 0 12px #747f8d; }
+
+    .profile-name { font-size:1.6rem; font-weight:700; margin-bottom:0.5rem; }
+    .profile-stats { color:var(--text-dim); font-size:1rem; }
+
+    .activity-wrapper {
+        max-height: 0; opacity: 0; overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 0; position: relative; padding: 0 12px;
+    }
+
+    .activity-wrapper::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+        background: var(--accent); box-shadow: 0 0 10px var(--accent);
+        transform: scaleX(0); transition: transform 0.4s ease;
+    }
+
+    .hof-card:hover .activity-wrapper {
+        max-height: 200px; opacity: 1; margin-top: 1.5rem; padding: 12px;
+    }
+
+    .hof-card:hover .activity-wrapper::before { transform: scaleX(1); }
+
+    .spotify-block {
+        display: flex; gap: 12px; background: rgba(40, 15, 15, 0.4);
+        padding: 10px; border-radius: 12px; border: 1px solid var(--glass-border);
+        text-align: left;
+    }
+
+    .game-block {
+        color: var(--accent); font-size: 0.9rem; font-family: 'Orbitron', sans-serif;
+        letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    /* Clovs sliding ticker */
+    .clovs-ticker {
+        width: 100vw; overflow: hidden; position: relative;
+        padding: 0.75rem 0; margin-bottom: -1rem;
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+        mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    }
+
+    .clovs-ticker-track {
+        display: flex; width: max-content; gap: 3.5rem;
+        animation: clovsTickerSlide 16s linear infinite;
+    }
+
+    @keyframes clovsTickerSlide {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    .clovs-ticker-track span {
+        font-family: 'Orbitron', monospace; font-weight: 900;
+        font-size: clamp(2rem, 5vw, 3.2rem);
+        color: transparent; -webkit-text-stroke: 1px var(--accent);
+        opacity: 0.45; white-space: nowrap; letter-spacing: 2px;
+    }
+
+    .clovs-ticker-track span:nth-child(even) {
+        -webkit-text-stroke: 0; color: var(--accent); opacity: 0.85;
+        text-shadow: var(--glow);
+    }
+
+    /* Members grid (pill style) */
+    .members-container {
+        width: 100%; max-width: 1400px; position: relative;
+        padding: 2rem 0; margin-top: 2rem;
+    }
+
+    .members-track {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px; width: 100%;
+    }
+
+    .members-pill {
+        display: flex; flex-direction: column;
+        background: rgba(40, 15, 15, 0.6); border: 1px solid var(--glass-border);
+        border-radius: 999px; padding: 12px 24px;
+        backdrop-filter: blur(10px); transition: var(--transition);
+    }
+
+    .members-pill:hover {
+        background: rgba(60, 20, 20, 0.8); border-color: var(--accent);
+        transform: translateY(-5px); box-shadow: var(--glow);
+    }
+
+    .pill-main { display: flex; align-items: center; gap: 16px; }
+
+    .pill-avatar {
+        width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
+        border: 2px solid var(--glass-border);
+    }
+
+    .pill-name { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+
+    .pill-activity {
+        max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease;
+        font-family: 'Orbitron', monospace; font-size: 0.75rem; color: var(--accent);
+    }
+
+    .members-pill:hover .pill-activity {
+        max-height: 40px; opacity: 1; margin-top: 8px; padding-top: 8px;
+        border-top: 1px solid var(--accent-glow); text-align: center;
+    }
+
+    /* Active members panel */
+    .active-panel {
+        width: min(92vw, 420px);
+        background: rgba(20, 10, 10, 0.55);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        backdrop-filter: blur(20px) saturate(160%);
+        padding: 22px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px -14px var(--accent-glow);
+    }
+
+    .active-header {
+        display: flex; align-items: center; gap: 10px;
+        font-family: 'Orbitron', monospace; font-size: 0.75rem; letter-spacing: 3px;
+        color: var(--text-dim); text-transform: uppercase;
+        padding-bottom: 14px; margin-bottom: 8px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .active-header .dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: #3ba55c; box-shadow: 0 0 10px #3ba55c;
+        animation: pulseActiveDot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseActiveDot {
+        0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    .active-list {
+        display: flex; flex-direction: column; gap: 2px;
+        max-height: 60vh; overflow-y: auto;
+    }
+
+    .active-row {
+        display: flex; align-items: center; gap: 14px;
+        padding: 10px 8px; border-radius: 14px;
+        transition: background 0.3s ease;
+        text-decoration: none; color: inherit;
+    }
+
+    .active-row:hover { background: rgba(255,255,255,0.05); }
+
+    .active-avatar-wrap { position: relative; width: 42px; height: 42px; flex-shrink: 0; }
+    .active-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .active-status-dot {
+        position: absolute; bottom: -2px; right: -2px; width: 13px; height: 13px;
+        border-radius: 50%; border: 2px solid #140a0a;
+    }
+    .active-status-dot.online { background: #3ba55c; }
+    .active-status-dot.idle { background: #faa61a; }
+    .active-status-dot.dnd { background: #ed4245; }
+
+    .active-info { min-width: 0; }
+    .active-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .active-activity {
+        font-size: 0.78rem; display: flex; align-items: center; gap: 6px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .active-activity.is-playing { color: var(--accent); }
+    .active-activity.is-listening { color: #1ed760; }
+    .active-activity.is-idle { color: var(--text-dim); }
+
+    .active-empty { text-align: center; color: var(--text-dim); padding: 2rem 0; font-size: 0.9rem; }
+
+    /* Emblem section */
+    .emblem-container {
+        display: flex; justify-content: center; align-items: center; perspective: 1000px;
+        position: relative;
+    }
+
+    .emblem {
+        width: 260px; height: 260px; border-radius: 50%;
+        background: #000;
+        box-shadow: 0 0 60px var(--accent-glow), inset 0 0 40px rgba(0,0,0,0.5);
+        display:flex; align-items:center; justify-content:center;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+        position: relative; overflow: hidden;
+    }
+
+    .emblem-img {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+        border-radius: 50%;
+    }
+
+    .emblem::after {
+        content: ''; position: absolute; inset: -12px; border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: var(--accent); border-bottom-color: var(--accent);
+        opacity: 0.55; pointer-events: none;
+        animation: emblemSpin 7s linear infinite;
+    }
+
+    @keyframes emblemSpin {
+        to { transform: rotate(360deg); }
+    }
+
+    .emblem:hover { transform: scale(1.08) rotate(4deg); }
+
+    /* Music Player */
+    .music-player {
+        position:fixed; bottom:24px; right:24px; width:80px; height:80px;
+        border-radius:50%; background:var(--glass); border:1px solid var(--glass-border);
+        backdrop-filter:blur(30px);
+        display:flex; align-items:center; justify-content:center;
+        cursor:pointer; transition:all var(--transition); z-index:1000;
+        box-shadow: var(--glow);
+    }
+
+    .music-player:hover { transform:scale(1.15) rotate(360deg); }
+
+    @media (max-width: 768px) {
+        .dock { gap:20px; font-size:0.85rem; }
+        .hof-grid { grid-template-columns:1fr; gap:2rem; }
+        nav { padding:10px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; animation: none !important; }
+    }
+
+    /* Custom cursor */
+    body.has-custom-cursor, body.has-custom-cursor * { cursor: none !important; }
+
+    .cursor-cat {
+        position: fixed; top: 0; left: 0; width: 26px; height: 26px;
+        background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+CjxwYXRoIGQ9J00xMiAwIEMxMyA3LjUgMTYuNSAxMSAyNCAxMiBDMTYuNSAxMyAxMyAxNi41IDEyIDI0IEMxMSAxNi41IDcuNSAxMyAwIDEyIEM3LjUgMTEgMTEgNy41IDEyIDAgWicgZmlsbD0nI2ZmM2IzYicvPgo8L3N2Zz4K");
+        background-size: contain; background-repeat: no-repeat;
+        pointer-events: none; z-index: 10000;
+        transform: translate(-50%, -50%);
+        filter: drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 10px var(--accent-glow));
+        animation: sparkleTwinkle 1.4s ease-in-out infinite;
+        transition: width 0.15s ease, height 0.15s ease;
+    }
+
+    @keyframes sparkleTwinkle {
+        0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        50% { transform: translate(-50%, -50%) scale(0.85) rotate(8deg); }
+    }
+
+    .cursor-cat.cursor-hover { width: 38px; height: 38px; }
+
+    .cursor-spark {
+        position: fixed; top: 0; left: 0; width: 4px; height: 4px;
+        border-radius: 50%; background: var(--accent);
+        box-shadow: 0 0 6px var(--accent), 0 0 12px var(--accent-glow);
+        pointer-events: none; z-index: 9998;
+        transform: translate(-50%, -50%);
+        animation: sparkFade 0.6s ease-out forwards;
+    }
+
+    @keyframes sparkFade {
+        0% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) translateY(14px); }
+    }
+  </style>
+  <script>
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('keydown', (e) => {
+      const key = e.key;
+      const blocked =
+        key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(key)) ||
+        (e.ctrlKey && ['U', 'u'].includes(key)) ||
+        (e.metaKey && e.altKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(key));
+      if (blocked) e.preventDefault();
+    });
+  </script>
+</head>
+<body>
+
+  <div id="entry-overlay">
+    <div class="entry-text" id="entryTrigger">&lt;/&gt;</div>
+  </div>
+
+  <div class="bg-animation"></div>
+  <div class="liquid-bg">
+    <div class="liquid-orb orb-red"></div>
+    <div class="liquid-orb orb-amber"></div>
+    <div class="liquid-orb orb-crimson"></div>
+  </div>
+  <div class="grain"></div>
+  <div class="embers" id="embers"></div>
+  <div class="glass-overlay"></div>
+
+  <div class="cursor-cat" id="cursorCat"></div>
+
+  <nav>
+    <div class="dock">
+      <a href="#home" class="nav-link active"><i class="fas fa-crown"></i> Home</a>
+      <a href="#active" class="nav-link"><i class="fas fa-bolt"></i> active</a>
+      <a href="#hof" class="nav-link"><i class="fas fa-trophy"></i> hof</a>
+      <a href="#xclsv" class="nav-link"><i class="bx bx-diamond"></i> xclsv</a>
+      <a href="#clovs" class="nav-link"><i class="fas fa-infinity"></i> clovs</a>
+      <a href="#emblem" class="nav-link"><i class="bx bx-images"></i> originated</a>
+    </div>
+  </nav>
+
+  <section id="home" class="active">
+    <div class="hero">
+      <h1 class="hero-title">CLOVS</h1>
+      <p class="hero-subtitle">faith upon faith</p>
+    </div>
+
+    <div class="home-hof-preview">
+      <h3 class="home-hof-heading">
+        <i class="fas fa-trophy"></i> we run ts
+      </h3>
+      <div class="hof-grid hof-grid-compact" id="hallOfFameHome">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-dim);">Loading...</div>
+      </div>
+      <a href="#hof" class="home-hof-more">view all <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </section>
+
+  <section id="active">
+    <h2 style="font-size:5rem; color:transparent; background:linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip:text; background-clip:text; margin-bottom:2rem;">
+      active
+    </h2>
+    <div class="active-panel">
+      <div class="active-header"><span class="dot"></span> active now</div>
+      <div class="active-list" id="activeList">
+        <div class="active-empty"><i class="fas fa-spinner fa-spin"></i> checking who's around...</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="hof">
+    <h2 style="font-size:5rem; color:transparent; background:linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip:text; background-clip:text; margin-bottom:1rem;">
+      hall of fame
+    </h2>
+    <div class="hof-grid" id="hallOfFame">
+      <div style="grid-column:1/-1;text-align:center;color:var(--text-dim);">Loading...</div>
+    </div>
+  </section>
+
+  <section id="xclsv">
+    <h2 style="font-size:5rem; color:transparent; background:linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip:text; background-clip:text; margin-bottom:1rem;">
+      xclsv
+    </h2>
+    <div class="hof-grid" id="xclsvIds">
+      <div style="grid-column:1/-1;text-align:center;color:var(--text-dim);">Loading...</div>
+    </div>
+  </section>
+
+  <section id="clovs">
+    <div style="text-align:center; max-width:900px;">
+      <h2 style="font-size:5rem; color:transparent; background:linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip:text; background-clip:text; margin-bottom:1rem;">
+        clovs
+      </h2>
+    </div>
+    <div class="clovs-ticker">
+      <div class="clovs-ticker-track">
+        <span>CLOVS ACP</span><span>CLOVS ACP</span><span>CLOVS ACP</span><span>CLOVS ACP</span>
+        <span>CLOVS ACP</span><span>CLOVS ACP</span><span>CLOVS ACP</span><span>CLOVS ACP</span>
+      </div>
+    </div>
+    <div class="members-container" style="display:flex; justify-content:center;">
+      <div class="members-track" id="membersTrack"></div>
+    </div>
+  </section>
+
+  <section id="emblem">
+    <h2 style="font-size:5rem; color:transparent; background:linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip:text; background-clip:text; margin-bottom:1rem;">
+      originated
+    </h2>
+    <br><br>
+    <div class="emblem-container">
+      <div class="emblem"><img src="sicario.png" alt="clovs.acp emblem" class="emblem-img"></div>
+    </div>
+  </section>
+
+  <div class="music-player" id="musicPlayer">
+    <i class="fas fa-music music-icon" style="font-size:2rem; color:#fff;"></i>
+  </div>
+
+  <audio id="bgMusic" loop preload="auto">
+    <source src="4217 Freestyle.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="config.js"></script>
+  <script>
+    // Safety net: if config.js didn't load (wrong filename/location, or
+    // a duplicate like "config (1).js" sitting next to it instead),
+    // warn on-screen instead of silently breaking every section/link.
+    // Local files opened by double-click (file://) have known browser
+    // restrictions that break API fetches and page navigation. Warn
+    // clearly instead of leaving things silently broken.
+    if (window.location.protocol === 'file:') {
+      window.addEventListener('DOMContentLoaded', () => {
+        const warn = document.createElement('div');
+        warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#b45309;color:#fff;text-align:center;padding:10px;font-family:sans-serif;font-size:0.8rem;';
+        warn.innerHTML = 'You\'re opening this as a local file — some things (data, links) may break. Serve it with a local server instead, e.g. <code>python -m http.server</code> then open <code>http://localhost:8000</code>.';
+        document.body.prepend(warn);
+      });
+    }
+
+    if (typeof MEMBERS === 'undefined') {
+      console.error('config.js did not load — make sure config.js is in the same folder as this file, named exactly "config.js".');
+      window.HALL_OF_FAME_IDS = []; window.WE_RUN_TS_IDS = []; window.XCLSV_IDS = []; window.MEMBER_IDS = [];
+      window.MEMBERS = {};
+      window.API_BASE = 'https://api.lanyard.rest/v1/users/';
+      window.DEFAULT_TRACK = { name: '', src: '' };
+      window.DEFAULT_BACKGROUND = '';
+      window.addEventListener('DOMContentLoaded', () => {
+        const warn = document.createElement('div');
+        warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#b91c1c;color:#fff;text-align:center;padding:10px;font-family:sans-serif;font-size:0.85rem;';
+        warn.textContent = 'config.js failed to load — check it\'s in the same folder as this file and named exactly "config.js" (not "config (1).js").';
+        document.body.prepend(warn);
+      });
+    }
+
+    // ===== Entry overlay =====
+    function dismissOverlay() {
+      const overlay = document.getElementById('entry-overlay');
+      if (overlay) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => { overlay.style.display = 'none'; }, 500);
+      }
+      playMusic();
+    }
+
+    const entryOverlay = document.getElementById('entry-overlay');
+    if (entryOverlay) {
+      entryOverlay.addEventListener('click', dismissOverlay);
+    }
+
+    // ===== Shared "who's around" fetch =====
+    // The #active section pulls from this combined, de-duplicated member
+    // list & single set of Lanyard calls, so we only ever fetch each ID
+    // once per page load.
+    function getAllMemberIds() {
+      const all = [
+        ...(typeof HALL_OF_FAME_IDS !== 'undefined' ? HALL_OF_FAME_IDS : []),
+        ...(typeof WE_RUN_TS_IDS !== 'undefined' ? WE_RUN_TS_IDS : []),
+        ...(typeof XCLSV_IDS !== 'undefined' ? XCLSV_IDS : []),
+        ...(typeof MEMBER_IDS !== 'undefined' ? MEMBER_IDS : [])
+      ].filter(Boolean);
+      return [...new Set(all)];
+    }
+
+    let memberStatusPromise = null;
+    function getAllMemberStatuses() {
+      if (!memberStatusPromise) {
+        const ids = getAllMemberIds();
+        memberStatusPromise = Promise.all(ids.map(id => fetchUser(id)))
+          .then(users => ids.map((id, i) => ({ id, user: users[i] })).filter(r => r.user));
+      }
+      return memberStatusPromise;
+    }
+
+    function getPortfolioLink(id) {
+      const member = MEMBERS[id];
+      const custom = member && member.portfolioLink;
+      if (custom && custom.trim() !== '') return custom;
+      const slug = member && member.slug && member.slug.trim();
+      return slug ? `clovs_acp.html#${slug}` : `clovs_acp.html?id=${id}`;
+    }
+
+    // ===== Navigation =====
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').substring(1);
+        const targetSection = document.getElementById(targetId);
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        targetSection.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // ===== Lanyard helpers =====
+    async function fetchUser(id) {
+      try {
+        const res = await fetch(API_BASE + id);
+        const data = await res.json();
+        return data.success ? data.data : null;
+      } catch (err) {
+        console.error('Error fetching Lanyard ID:', id, err);
+        return null;
+      }
+    }
+
+    function getAvatarUrl(user) {
+      if (!user || !user.discord_user) return `https://cdn.discordapp.com/embed/avatars/0.png`;
+      const { id, avatar } = user.discord_user;
+      return avatar
+        ? `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp?size=256`
+        : `https://cdn.discordapp.com/embed/avatars/${parseInt(id) % 5}.png`;
+    }
+
+    function getStatusClass(status) {
+      if (status === 'online') return 'online';
+      if (status === 'idle') return 'idle';
+      if (status === 'dnd') return 'dnd';
+      return 'offline';
+    }
+
+    function renderActivity(user) {
+      let innerContent = '';
+      if (user.listening_to_spotify && user.spotify) {
+        innerContent = `
+          <div class="spotify-block">
+            <img src="${user.spotify.album_art_url}" style="width:42px;height:42px;border-radius:6px;flex-shrink:0;" alt="Spotify">
+            <div style="overflow:hidden;">
+              <div style="font-weight:600;color:#1ed760;font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${user.spotify.song}</div>
+              <div style="color:var(--text-dim);font-size:0.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${user.spotify.artist}</div>
+            </div>
+          </div>`;
+      } else {
+        const game = user.activities?.find(a => a.type === 0);
+        if (game) {
+          innerContent = `<div class="game-block"><i class="fas fa-terminal" style="font-size:0.7rem;"></i> Now Playing: ${game.name}</div>`;
+        } else {
+          innerContent = `<div style="color:var(--text-dim);font-size:0.8rem;font-style:italic;">No Activity</div>`;
+        }
+      }
+      return `<div class="activity-wrapper">${innerContent}</div>`;
+    }
+
+    async function loadHallOfFame(ids = HALL_OF_FAME_IDS, containerIds = ['hallOfFame']) {
+      const containers = containerIds.map(id => document.getElementById(id)).filter(Boolean);
+      containers.forEach(c => {
+        c.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-dim);"><i class="fas fa-spinner fa-spin"></i> Fetching users...</div>`;
+      });
+
+      const users = await Promise.all(ids.filter(Boolean).map(id => fetchUser(id)));
+      const validUsers = users.filter(u => u !== null);
+
+      if (validUsers.length === 0) {
+        containers.forEach(c => {
+          c.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-dim);">No users found — swap in real Discord IDs in the script config.</div>`;
+        });
+        return;
+      }
+
+      const cardsHtml = validUsers.map(user => {
+        const u = user.discord_user;
+        const status = getStatusClass(user.discord_status);
+        const name = u.global_name || u.username;
+        const link = getPortfolioLink(u.id);
+        return `
+          <a href="${link}" class="hof-card-link">
+            <div class="hof-card">
+              <div class="profile-display">
+                <img src="${getAvatarUrl(user)}" class="profile-avatar" alt="${name}">
+                <div class="status-ring ${status}"></div>
+              </div>
+              <div class="profile-name">${name}</div>
+              <div class="profile-stats">@${u.username}</div>
+              ${renderActivity(user)}
+            </div>
+          </a>
+        `;
+      }).join('');
+
+      containers.forEach(c => { c.innerHTML = cardsHtml; });
+    }
+
+    async function loadActiveList() {
+      const list = document.getElementById('activeList');
+      if (!list) return;
+
+      const statuses = await getAllMemberStatuses();
+      const active = statuses.filter(r => r.user && r.user.discord_status !== 'offline');
+
+      // online first, then idle, then dnd
+      const order = { online: 0, idle: 1, dnd: 2 };
+      active.sort((a, b) => (order[a.user.discord_status] ?? 3) - (order[b.user.discord_status] ?? 3));
+
+      if (active.length === 0) {
+        list.innerHTML = `<div class="active-empty">no one's around right now</div>`;
+        return;
+      }
+
+      list.innerHTML = active.map(({ id, user }) => {
+        const u = user.discord_user;
+        const name = u.global_name || u.username;
+        const status = getStatusClass(user.discord_status);
+        const link = getPortfolioLink(id);
+
+        let activityHtml, activityClass;
+        if (user.listening_to_spotify && user.spotify) {
+          activityHtml = `<i class="fas fa-music"></i> ${user.spotify.song}`;
+          activityClass = 'is-listening';
+        } else {
+          const game = user.activities?.find(a => a.type === 0);
+          if (game) {
+            activityHtml = `<i class="fas fa-gamepad"></i> ${game.name}`;
+            activityClass = 'is-playing';
+          } else if (status === 'idle') {
+            activityHtml = `<i class="fas fa-moon"></i> idle`;
+            activityClass = 'is-idle';
+          } else {
+            activityHtml = 'online';
+            activityClass = '';
+          }
+        }
+
+        return `
+          <a href="${link}" class="active-row">
+            <div class="active-avatar-wrap">
+              <img src="${getAvatarUrl(user)}" class="active-avatar" alt="${name}">
+              <div class="active-status-dot ${status}"></div>
+            </div>
+            <div class="active-info">
+              <div class="active-name">${name}</div>
+              <div class="active-activity ${activityClass}">${activityHtml}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    async function loadMembers() {
+      const track = document.getElementById('membersTrack');
+      const ids = MEMBER_IDS.filter(Boolean);
+
+      if (ids.length === 0) {
+        track.innerHTML = `<div style="color:var(--text-dim);padding:1rem;">No members found — swap in real Discord IDs in the script config.</div>`;
+        return;
+      }
+
+      const users = await Promise.all(ids.map(id => fetchUser(id)));
+
+      // Build one pill per ID, even if Lanyard has no live data for that
+      // person yet — this keeps the track always full so the slide never
+      // stalls out on a single missing/offline ID.
+      const cards = ids.map((id, i) => {
+        const user = users[i];
+        const link = getPortfolioLink(id);
+        if (!user) {
+          return `
+            <a href="${link}" class="pill-link">
+              <div class="members-pill">
+                <div class="pill-main">
+                  <img src="https://cdn.discordapp.com/embed/avatars/${parseInt(id) % 5 || 0}.png" class="pill-avatar" alt="member">
+                  <div class="pill-name">Member</div>
+                </div>
+                <div class="pill-activity">No Activity</div>
+              </div>
+            </a>
+          `;
+        }
+        const name = user.discord_user.global_name || user.discord_user.username;
+        let activityText = 'No Activity';
+        if (user.listening_to_spotify) activityText = `♫ ${user.spotify.song}`;
+        else if (user.activities?.find(a => a.type === 0)) activityText = `⬡ ${user.activities.find(a => a.type === 0).name}`;
+
+        return `
+          <a href="${link}" class="pill-link">
+            <div class="members-pill">
+              <div class="pill-main">
+                <img src="${getAvatarUrl(user)}" class="pill-avatar" alt="${name}">
+                <div class="pill-name">${name}</div>
+              </div>
+              <div class="pill-activity">${activityText}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+
+      track.innerHTML = cards;
+    }
+
+    // ===== Embers =====
+    function spawnEmbers() {
+      const container = document.getElementById('embers');
+      const count = 30;
+      for (let i = 0; i < count; i++) {
+        const ember = document.createElement('div');
+        ember.className = 'ember';
+        ember.style.left = Math.random() * 100 + 'vw';
+        ember.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+        ember.style.animationDuration = (6 + Math.random() * 8) + 's';
+        ember.style.animationDelay = (Math.random() * 10) + 's';
+        ember.style.opacity = 0.3 + Math.random() * 0.5;
+        container.appendChild(ember);
+      }
+    }
+
+    // ===== Init =====
+    window.addEventListener('DOMContentLoaded', () => {
+      loadHallOfFame(HALL_OF_FAME_IDS, ['hallOfFame']);
+      loadHallOfFame(WE_RUN_TS_IDS, ['hallOfFameHome']);
+      loadHallOfFame(XCLSV_IDS, ['xclsvIds']);
+      loadMembers();
+      loadActiveList();
+      spawnEmbers();
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(link => {
+              if (link.getAttribute('href').substring(1) === entry.target.id) {
+                link.classList.add('active');
+              } else {
+                link.classList.remove('active');
+              }
+            });
+          }
+        });
+      }, { threshold: 0.5 });
+
+      document.querySelectorAll('section').forEach(section => observer.observe(section));
+    });
+
+    // ===== Music toggle =====
+    const musicPlayer = document.getElementById('musicPlayer');
+    const bgMusic = document.getElementById('bgMusic');
+    let isPlaying = false;
+
+    function updateMusicIcon() {
+      musicPlayer.innerHTML = isPlaying
+        ? '<i class="fas fa-pause" style="font-size:2rem;color:#fff;"></i>'
+        : '<i class="fas fa-music music-icon" style="font-size:2rem;color:#fff;"></i>';
+    }
+
+    function playMusic() {
+      bgMusic.play().then(() => {
+        isPlaying = true;
+        updateMusicIcon();
+      }).catch(e => console.log('Audio play blocked or no source set', e));
+    }
+
+    function pauseMusic() {
+      bgMusic.pause();
+      isPlaying = false;
+      updateMusicIcon();
+    }
+
+    musicPlayer.addEventListener('click', () => {
+      if (isPlaying) {
+        pauseMusic();
+      } else {
+        playMusic();
+      }
+    });
+
+    // Keep icon in sync if playback state changes from elsewhere (e.g. browser controls)
+    bgMusic.addEventListener('play', () => { isPlaying = true; updateMusicIcon(); });
+    bgMusic.addEventListener('pause', () => { isPlaying = false; updateMusicIcon(); });
+
+    // ===== Custom cat cursor =====
+    (function initCustomCursor() {
+      const isTouch = window.matchMedia('(pointer: coarse)').matches;
+      if (isTouch) return;
+
+      document.body.classList.add('has-custom-cursor');
+
+      const cat = document.getElementById('cursorCat');
+
+      let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+      let catX = mouseX, catY = mouseY;
+      let lastSpark = 0;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+
+        const now = performance.now();
+        if (now - lastSpark > 60) {
+          lastSpark = now;
+          const spark = document.createElement('div');
+          spark.className = 'cursor-spark';
+          spark.style.left = mouseX + 'px';
+          spark.style.top = mouseY + 'px';
+          document.body.appendChild(spark);
+          setTimeout(() => spark.remove(), 650);
+        }
+      });
+
+      function animateCat() {
+        catX += (mouseX - catX) * 0.35;
+        catY += (mouseY - catY) * 0.35;
+        cat.style.left = catX + 'px';
+        cat.style.top = catY + 'px';
+        requestAnimationFrame(animateCat);
+      }
+      animateCat();
+
+      const hoverTargets = 'a, button, .music-player, .emblem, .hof-card, .members-pill';
+      document.addEventListener('mouseover', (e) => {
+        if (e.target.closest(hoverTargets)) {
+          cat.classList.add('cursor-hover');
+        }
+      });
+      document.addEventListener('mouseout', (e) => {
+        if (e.target.closest(hoverTargets)) {
+          cat.classList.remove('cursor-hover');
+        }
+      });
+
+      document.addEventListener('mouseleave', () => {
+        cat.style.opacity = '0';
+      });
+      document.addEventListener('mouseenter', () => {
+        cat.style.opacity = '1';
+      });
+    })();
+  </script>
+</body>
+</html>

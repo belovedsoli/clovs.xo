@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>clovs.acp</title>
+<link rel="icon" id="faviconLink" href="">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --bg:#050505;
+    --card:rgba(20,20,20,0.55);
+    --card-border:rgba(255,255,255,0.14);
+    --text:#f5f5f5;
+    --text-dim:#b9b9b9;
+    --accent:#ff3b3b;
+    --glow:0 0 30px rgba(255,59,59,0.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:#000;
+    color:var(--text);
+    font-family:'Exo 2', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    display:flex; align-items:center; justify-content:center;
+    padding:40px 16px 140px;
+    position:relative;
+  }
+
+  /* ===== entry gate — shown first, blurred glowing background photo/video ===== */
+  .entry-gate{
+    position:fixed; inset:0; z-index:200;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; cursor:pointer; padding:24px; overflow:hidden;
+    opacity:1; visibility:visible;
+    transition:opacity 0.6s ease, visibility 0.6s ease;
+  }
+  .entry-gate.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+  .entry-gate-bg-wrap{
+    position:absolute; inset:-30px; z-index:-3; overflow:hidden; background:#000;
+  }
+  .entry-gate-bg, .entry-gate-bg-video{
+    position:absolute; inset:0; width:100%; height:100%;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+    object-fit:cover;
+    filter:brightness(0.55) saturate(1.05) blur(22px);
+    transform:scale(1.12);
+  }
+  .entry-gate-bg-video{ display:none; }
+  .entry-gate-bg-wrap::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.88) 100%);
+  }
+  .entry-glow-orbs{ position:absolute; inset:0; z-index:-2; overflow:hidden; pointer-events:none; }
+  .entry-glow-orb{
+    position:absolute; width:380px; height:380px; border-radius:50%;
+    filter:blur(100px); mix-blend-mode:screen; opacity:0.4;
+    background:var(--accent-tint, var(--accent));
+    animation:floatGlow 15s ease-in-out infinite alternate;
+  }
+  .entry-glow-orb.orb-a{ top:-14%; left:-12%; }
+  .entry-glow-orb.orb-b{ width:300px; height:300px; bottom:-10%; right:-8%; animation-duration:19s; opacity:0.3; }
+  .entry-gate .avatar-wrap{ width:110px; height:110px; margin:0 auto 26px; }
+  .entry-gate .avatar-wrap::before{ animation:gatePulse 2.6s ease-in-out infinite; }
+  @keyframes gatePulse{
+    0%,100%{ box-shadow:0 0 24px var(--accent-tint, var(--accent)); opacity:0.5; }
+    50%{ box-shadow:0 0 48px var(--accent-tint, var(--accent)); opacity:0.9; }
+  }
+  .entry-gate .name{
+    font-size:2rem; margin-bottom:10px;
+    text-shadow:0 0 18px rgba(255,255,255,0.3), 0 0 34px var(--accent-tint, var(--accent));
+  }
+  .entry-gate .tagline{ margin-bottom:34px; }
+  .entry-btn{
+    background:#fff; color:#000; border:none; border-radius:999px;
+    padding:13px 28px; font-size:0.8rem; font-weight:800; letter-spacing:1.5px;
+    text-transform:uppercase; cursor:pointer; display:inline-flex; align-items:center; gap:10px;
+    box-shadow:0 0 20px rgba(255,255,255,0.25), 0 0 36px var(--accent-tint, var(--accent));
+    transition:transform 0.2s ease, box-shadow 0.3s ease;
+  }
+  .entry-btn:hover{ box-shadow:0 0 26px rgba(255,255,255,0.4), 0 0 50px var(--accent-tint, var(--accent)); }
+  .entry-btn:active{ transform:scale(0.96); }
+  .entry-hint{
+    margin-top:20px; color:rgba(255,255,255,0.5); font-size:0.65rem;
+    letter-spacing:2px; text-transform:uppercase;
+  }
+
+  /* grunge watermark backdrop */
+  .grunge{
+    position:fixed; inset:0; z-index:-3; overflow:hidden;
+    background:#000;
+  }
+  .bg-image{
+    position:fixed; inset:0; z-index:-4;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+    filter:brightness(0.45) saturate(0.9);
+  }
+  .bg-video{
+    position:fixed; inset:0; z-index:-4; width:100%; height:100%; object-fit:cover;
+    filter:brightness(0.45) saturate(0.9);
+  }
+  .bg-dark-overlay{
+    position:fixed; inset:0; z-index:-3; display:none; pointer-events:none;
+    background:radial-gradient(circle at 50% 40%, rgba(0,0,0,0.2), rgba(0,0,0,0.85) 80%);
+  }
+  .grunge span{
+    position:absolute; white-space:nowrap;
+    font-family:'UnifrakturCook', serif;
+    color:rgba(255,255,255,0.06);
+    filter:blur(0.5px);
+    user-select:none;
+  }
+  .grunge .w1{ font-size:14vw; top:8%; left:-8%; transform:rotate(-6deg); }
+  .grunge .w2{ font-size:9vw; bottom:6%; left:-4%; transform:rotate(-4deg); font-family:'Exo 2',sans-serif; font-weight:800; font-style:italic; color:rgba(255,255,255,0.05);}
+  .grunge .w3{ font-size:11vw; top:38%; right:-10%; transform:rotate(4deg); }
+
+  .noise{
+    position:fixed; inset:0; z-index:-2; pointer-events:none; opacity:0.05;
+    background-image:radial-gradient(circle at 25% 25%, #fff 1px, transparent 1px),
+                      radial-gradient(circle at 75% 75%, #fff 1px, transparent 1px);
+    background-size:48px 48px;
+  }
+
+  /* ambient glow orbs behind the card — follow the accent tint */
+  .glow-orbs{ position:fixed; inset:0; z-index:-2; overflow:hidden; pointer-events:none; }
+  .glow-orb{
+    position:absolute; width:420px; height:420px; border-radius:50%;
+    filter:blur(110px); mix-blend-mode:screen; opacity:0.28;
+    background:var(--accent-tint, var(--accent));
+    animation:floatGlow 16s ease-in-out infinite alternate;
+  }
+  .glow-orb.orb-a{ top:-12%; left:-10%; }
+  .glow-orb.orb-b{ width:340px; height:340px; top:55%; left:68%; animation-duration:20s; opacity:0.18; }
+  @keyframes floatGlow{
+    0%{ transform:translate(0,0) scale(1); }
+    100%{ transform:translate(60px,40px) scale(1.15); }
+  }
+
+  .sparkles{ position:fixed; inset:0; z-index:-1; pointer-events:none; }
+  .sparkle{
+    position:absolute; width:3px; height:3px; border-radius:50%;
+    background:#fff; opacity:0.7; box-shadow:0 0 6px #fff;
+    animation:twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle{ 0%,100%{opacity:0.2;} 50%{opacity:0.9;} }
+
+  .comet{
+    position:fixed; top:9%; left:24%; width:14px; height:14px; border-radius:50%;
+    background:#fff; box-shadow:0 0 18px 4px rgba(255,255,255,0.6);
+    z-index:-1;
+  }
+  .comet::before{
+    content:''; position:absolute; right:100%; top:50%; width:120px; height:1px;
+    background:linear-gradient(to left, rgba(255,255,255,0.5), transparent);
+    transform:translateY(-50%);
+  }
+
+  .snow{ position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; }
+  .snowflake{
+    position:absolute; top:-10px; border-radius:50%;
+    background:#fff; box-shadow:0 0 6px rgba(255,255,255,0.6);
+    animation:snowFall linear infinite;
+  }
+  @keyframes snowFall{
+    0%{ transform:translateY(0) translateX(0); opacity:0.9; }
+    100%{ transform:translateY(110vh) translateX(var(--drift, 40px)); opacity:0.2; }
+  }
+
+  /* card */
+  .card{
+    position:relative; width:100%; max-width:420px;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:28px; backdrop-filter:blur(20px) saturate(140%);
+    padding:40px 32px 20px; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.6), 0 0 50px -12px var(--accent-tint, var(--accent));
+    animation:cardIn 0.6s cubic-bezier(0.16,1,0.3,1);
+    transition: box-shadow 0.4s ease;
+  }
+  @keyframes cardIn{ from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);} }
+
+  .back-link{
+    position:fixed; top:24px; left:24px; z-index:10;
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(20,20,20,0.6); border:1px solid var(--card-border);
+    backdrop-filter:blur(14px);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); text-decoration:none; font-size:1.1rem;
+    transition:all 0.3s ease;
+  }
+  .back-link:hover{ color:#fff; border-color:var(--accent); transform:translateX(-3px); }
+
+  .avatar-wrap{
+    position:relative; width:120px; height:120px; margin:0 auto 20px;
+  }
+  .avatar-wrap::before{
+    content:''; position:absolute; inset:-8px; border-radius:50%;
+    box-shadow:0 0 26px var(--accent-tint, var(--accent));
+    opacity:0.55; pointer-events:none;
+  }
+  .avatar-wrap img{
+    width:100%; height:100%; border-radius:50%; object-fit:cover;
+    border:3px solid rgba(255,255,255,0.15);
+    position:relative;
+  }
+  .status-dot-ring{
+    position:absolute; bottom:4px; right:4px; width:16px; height:16px;
+    border-radius:50%; border:3px solid #000;
+  }
+  .status-dot-ring.online{ background:#3ba55c; }
+  .status-dot-ring.idle{ background:#faa61a; }
+  .status-dot-ring.dnd{ background:#ed4245; }
+  .status-dot-ring.offline{ background:#747f8d; }
+
+  .name{
+    font-size:1.9rem; font-weight:800; margin-bottom:10px;
+    text-shadow:0 0 20px rgba(255,255,255,0.15), 0 0 26px var(--accent-tint, var(--accent));
+  }
+
+  .tagline{
+    font-size:0.8rem; font-weight:600; letter-spacing:1px;
+    text-transform:uppercase; color:var(--text-dim); margin-bottom:20px;
+  }
+
+  .status-pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 18px; border-radius:999px;
+    background:rgba(255,255,255,0.06); border:1px solid var(--card-border);
+    font-size:0.8rem; color:var(--text-dim); margin-bottom:26px;
+  }
+  .status-pill .dot{ width:8px; height:8px; border-radius:50%; }
+  .status-pill .dot.online{ background:#3ba55c; box-shadow:0 0 8px #3ba55c;}
+  .status-pill .dot.idle{ background:#faa61a; box-shadow:0 0 8px #faa61a;}
+  .status-pill .dot.dnd{ background:#ed4245; box-shadow:0 0 8px #ed4245;}
+  .status-pill .dot.offline{ background:#747f8d; }
+
+  .socials{
+    display:flex; justify-content:center; gap:14px; margin-bottom:32px;
+  }
+  .socials a{
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(255,255,255,0.06); border:1px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); text-decoration:none; font-size:1.1rem;
+    transition:all 0.3s ease;
+  }
+  .socials a:hover{ color:#fff; border-color:var(--accent-tint, var(--accent)); transform:translateY(-3px); box-shadow:0 6px 18px var(--accent-tint, var(--accent)); }
+
+  .divider{
+    position:relative; height:14px; margin:0 -32px;
+    background:
+      linear-gradient(135deg, transparent 50%, #000 50%) 0 0 / 14px 14px repeat-x,
+      linear-gradient(-135deg, transparent 50%, #000 50%) 0 0 / 14px 14px repeat-x;
+    opacity:0.5;
+  }
+
+  .card-footer{
+    display:flex; align-items:center; justify-content:space-between;
+    padding-top:14px;
+  }
+  .footer-icons{ display:flex; gap:14px; }
+  .footer-icons button{
+    background:none; border:none; color:var(--text-dim); font-size:1rem;
+    cursor:pointer; transition:color 0.3s ease;
+  }
+  .footer-icons button:hover{ color:#fff; }
+  .views{ display:flex; align-items:center; gap:6px; color:var(--text-dim); font-size:0.85rem; }
+
+  .toast{
+    position:fixed; bottom:120px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:rgba(20,20,20,0.9); border:1px solid var(--card-border);
+    padding:10px 20px; border-radius:999px; font-size:0.85rem;
+    opacity:0; pointer-events:none; transition:all 0.35s ease; z-index:50;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* bottom music widget */
+  .music-bar{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    width:min(92vw, 420px);
+    background:rgba(15,15,15,0.75); border:1px solid var(--card-border);
+    backdrop-filter:blur(20px); border-radius:999px;
+    padding:10px 18px; display:flex; align-items:center; gap:14px;
+    z-index:10; box-shadow:0 10px 40px rgba(0,0,0,0.5), 0 0 30px -14px var(--accent-tint, var(--accent));
+  }
+  .music-bar .ctrl{
+    background:none; border:none; color:var(--text-dim); font-size:1rem; cursor:pointer;
+  }
+  .music-bar .ctrl.play{
+    width:38px; height:38px; border-radius:50%; background:#fff; color:#000;
+    display:flex; align-items:center; justify-content:center; font-size:0.9rem;
+  }
+  .music-bar .meta{ flex:1; min-width:0; }
+  .music-bar .track{ font-size:0.85rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .music-bar .time{ font-size:0.7rem; color:var(--text-dim); }
+  .eq{ display:flex; align-items:flex-end; gap:2px; height:16px; }
+  .eq span{ width:3px; background:var(--accent); border-radius:2px; animation:eq 1s ease-in-out infinite; }
+  .eq span:nth-child(2){ animation-delay:0.15s; }
+  .eq span:nth-child(3){ animation-delay:0.3s; }
+  .eq span:nth-child(4){ animation-delay:0.45s; }
+  @keyframes eq{ 0%,100%{ height:4px; } 50%{ height:16px; } }
+  .music-bar.paused .eq span{ animation-play-state:paused; height:4px; }
+
+  @media (max-width:480px){
+    .card{ padding:32px 22px 16px; }
+    .name{ font-size:1.6rem; }
+  }
+
+  /* ===== moving / tilting card ===== */
+  .card{
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.15s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease;
+  }
+  .card.settling{
+    transition: transform 0.6s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease;
+  }
+  .card::before{
+    content:''; position:absolute; inset:0; border-radius:28px; pointer-events:none;
+    background: radial-gradient(circle at var(--glare-x,50%) var(--glare-y,50%), rgba(255,255,255,0.14), transparent 55%);
+    opacity: var(--glare-o, 0);
+    transition: opacity 0.3s ease;
+    z-index: 2;
+  }
+
+  /* ===== top-left icon row ===== */
+  .icon-row{
+    position:fixed; top:24px; left:24px; z-index:10;
+    display:flex; gap:12px;
+  }
+  .icon-row .back-link, .icon-row .settings-btn{ position:static; }
+  .settings-btn{
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(20,20,20,0.6); border:1px solid var(--card-border);
+    backdrop-filter:blur(14px);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); cursor:pointer; font-size:1.1rem;
+    transition:all 0.3s ease;
+  }
+  .settings-btn:hover{ color:#fff; border-color:var(--accent); transform:rotate(35deg); }
+  .settings-btn.active{ color:#fff; border-color:var(--accent); box-shadow:0 0 14px var(--accent-tint, var(--accent)); }
+
+  /* ===== top-right active widget ===== */
+  .active-widget{
+    position:fixed; top:24px; right:24px; z-index:10;
+    width:min(72vw, 250px);
+    background:rgba(20,20,20,0.6); border:1px solid var(--card-border);
+    border-radius:20px; backdrop-filter:blur(14px);
+    padding:14px 14px 8px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.4);
+  }
+  .active-widget-header{
+    display:flex; align-items:center; gap:8px;
+    font-family:'Orbitron', monospace; font-size:0.65rem; letter-spacing:2.5px;
+    color:var(--text-dim); text-transform:uppercase; font-weight:700;
+    padding-bottom:10px; margin-bottom:6px;
+    border-bottom:1px solid var(--card-border);
+  }
+  .active-widget-header .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:#3ba55c; box-shadow:0 0 8px #3ba55c;
+    animation:activeDotPulse 2s ease-in-out infinite;
+  }
+  @keyframes activeDotPulse{ 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .active-widget-list{
+    display:flex; flex-direction:column; gap:2px;
+    max-height:260px; overflow-y:auto;
+  }
+  .active-widget-row{
+    display:flex; align-items:center; gap:10px;
+    padding:6px 4px; border-radius:12px;
+    text-decoration:none; color:inherit;
+    transition:background 0.25s ease;
+  }
+  .active-widget-row:hover{ background:rgba(255,255,255,0.06); }
+  .active-widget-avatar-wrap{ position:relative; width:32px; height:32px; flex-shrink:0; }
+  .active-widget-avatar{ width:100%; height:100%; border-radius:50%; object-fit:cover; }
+  .active-widget-dot{
+    position:absolute; bottom:-2px; right:-2px; width:10px; height:10px;
+    border-radius:50%; border:2px solid #141414;
+  }
+  .active-widget-dot.online{ background:#3ba55c; }
+  .active-widget-dot.idle{ background:#faa61a; }
+  .active-widget-dot.dnd{ background:#ed4245; }
+  .active-widget-info{ min-width:0; }
+  .active-widget-name{ font-weight:700; font-size:0.78rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .active-widget-activity{
+    font-size:0.65rem; color:var(--text-dim);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    display:flex; align-items:center; gap:4px;
+  }
+  .active-widget-activity.is-playing{ color:var(--accent-tint, var(--accent)); }
+  .active-widget-activity.is-listening{ color:#1ed760; }
+  .active-widget-empty{ text-align:center; color:var(--text-dim); font-size:0.72rem; padding:10px 0; }
+
+  @media (max-width:600px){
+    .active-widget{ width:min(60vw, 190px); padding:10px 10px 6px; }
+    .active-widget-name{ font-size:0.7rem; }
+    .active-widget-activity{ font-size:0.6rem; }
+  }
+
+  /* ===== settings panel ===== */
+  .settings-panel{
+    position:fixed; top:24px; left:24px;
+    width:min(85vw, 300px); max-height:min(85vh, 620px);
+    background:rgba(20,20,20,0.6);
+    border:1px solid var(--card-border);
+    border-radius:20px;
+    backdrop-filter:blur(14px);
+    z-index:200;
+    padding:16px 16px 14px;
+    display:flex; flex-direction:column; gap:20px;
+    transform:translateX(-16px); scale:1;
+    opacity:0; pointer-events:none;
+    box-shadow:0 10px 40px rgba(0,0,0,0.4);
+    transition:transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+    overflow-y:auto;
+  }
+  .settings-panel.open{ transform:translateX(0); opacity:1; pointer-events:auto; }
+
+  .settings-title{
+    text-align:left; font-family:'Orbitron', monospace; font-size:0.65rem;
+    letter-spacing:2.5px; color:var(--text-dim); text-transform:uppercase; font-weight:700;
+    position:relative; padding-bottom:10px; margin-bottom:2px;
+    border-bottom:1px solid var(--card-border);
+    display:flex; align-items:center; gap:8px;
+  }
+  .settings-title-dot{
+    width:7px; height:7px; border-radius:50%; flex-shrink:0;
+    background:var(--accent-tint, var(--accent)); box-shadow:0 0 8px currentColor;
+  }
+
+  .settings-close{
+    position:absolute; top:16px; right:16px;
+    background:none; border:none; color:var(--text-dim); font-size:1rem; cursor:pointer;
+  }
+  .settings-close:hover{ color:#fff; }
+
+  .setting-row{ display:flex; flex-direction:column; gap:10px; }
+  .setting-label{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:0.7rem; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--text-dim); font-weight:700;
+  }
+  .setting-label .val{ color:#fff; font-family:'Orbitron', monospace; font-size:0.7rem; }
+
+  .settings-panel input[type="range"]{
+    -webkit-appearance:none; appearance:none; width:100%; height:4px;
+    border-radius:999px; background:rgba(255,255,255,0.14); outline:none; cursor:pointer;
+  }
+  .settings-panel input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:18px; height:18px; border-radius:50%;
+    background:#fff; cursor:pointer; box-shadow:0 0 0 4px rgba(255,255,255,0.08);
+    transition:box-shadow 0.2s ease;
+  }
+  .settings-panel input[type="range"]::-webkit-slider-thumb:hover{ box-shadow:0 0 0 6px rgba(255,255,255,0.14); }
+  .settings-panel input[type="range"]::-moz-range-thumb{
+    width:18px; height:18px; border-radius:50%; background:#fff; border:none; cursor:pointer;
+  }
+
+  .toggle-row{ display:flex; justify-content:space-between; align-items:center; }
+  .toggle-row .setting-label{ margin:0; }
+  .switch{
+    position:relative; width:40px; height:22px; flex-shrink:0;
+  }
+  .switch input{ opacity:0; width:0; height:0; position:absolute; }
+  .switch .slider{
+    position:absolute; inset:0; background:rgba(255,255,255,0.14);
+    border-radius:999px; cursor:pointer; transition:background 0.25s ease;
+  }
+  .switch .slider::before{
+    content:''; position:absolute; width:16px; height:16px; left:3px; top:3px;
+    background:#fff; border-radius:50%; transition:transform 0.25s ease;
+  }
+  .switch input:checked + .slider{ background:var(--accent-tint, var(--accent)); }
+  .switch input:checked + .slider::before{ transform:translateX(18px); }
+
+  .tint-row{ display:flex; gap:14px; padding-top:2px; }
+  .tint-dot{
+    width:30px; height:30px; border-radius:50%; cursor:pointer; position:relative;
+    border:2px solid transparent; transition:transform 0.2s ease, border-color 0.2s ease;
+  }
+  .tint-dot:hover{ transform:translateY(-2px); }
+  .tint-dot.selected{ border-color:rgba(255,255,255,0.8); box-shadow:0 0 12px currentColor; }
+  .tint-dot.selected::after{
+    content:'\f00c'; font-family:'Font Awesome 6 Free'; font-weight:900; font-size:0.7rem;
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#000;
+  }
+
+  .settings-footer{
+    margin-top:auto; display:flex; justify-content:space-between; align-items:center;
+    padding-top:14px; border-top:1px solid var(--card-border);
+  }
+  .settings-reset{
+    background:none; border:none; color:var(--text-dim); font-size:0.7rem;
+    letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; font-weight:700;
+  }
+  .settings-reset:hover{ color:var(--accent); }
+  .settings-hint{
+    display:flex; align-items:center; gap:8px; font-size:0.65rem; letter-spacing:1px;
+    color:var(--text-dim); text-transform:uppercase;
+  }
+  .settings-hint kbd{
+    width:20px; height:20px; border-radius:5px; background:rgba(255,255,255,0.08);
+    border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center;
+    font-family:'Exo 2', sans-serif; font-style:normal;
+  }
+
+  .settings-overlay{
+    position:fixed; inset:0; background:transparent; z-index:199;
+    opacity:0; pointer-events:none;
+  }
+  .settings-overlay.open{ opacity:1; pointer-events:auto; }
+
+  /* ===== CRT effect ===== */
+  .crt-overlay{
+    position:fixed; inset:0; pointer-events:none; z-index:50; opacity:0;
+    transition:opacity 0.3s ease;
+    background:repeating-linear-gradient(rgba(0,0,0,0) 0, rgba(0,0,0,0) 1px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0) 3px);
+    mix-blend-mode:multiply;
+  }
+  .crt-overlay::after{
+    content:''; position:absolute; inset:0;
+    box-shadow: inset 0 0 140px rgba(0,0,0,0.75);
+  }
+  body.crt-on .crt-overlay{ opacity:1; }
+  body.crt-on{ animation:crtFlicker 6s infinite; }
+  @keyframes crtFlicker{
+    0%,96%,100%{ filter:none; }
+    97%{ filter:brightness(1.04) contrast(1.02); }
+    98%{ filter:brightness(0.98); }
+  }
+
+  /* ===== reduce motion ===== */
+  body.reduce-motion *{
+    animation-play-state: paused !important;
+  }
+  body.reduce-motion .card{ transition:none !important; }
+
+  .music-bar.force-hidden{ display:none !important; }
+
+  /* ===== volume control on music bar ===== */
+  .music-bar{ flex-wrap:wrap; row-gap:8px; }
+  .volume-wrap{
+    display:flex; align-items:center; gap:8px; width:100%;
+    order:5; padding-top:6px; border-top:1px solid rgba(255,255,255,0.08);
+  }
+  .volume-wrap .ctrl{ font-size:0.85rem; }
+  .volume-wrap input[type="range"]{
+    -webkit-appearance:none; appearance:none; flex:1; height:3px;
+    border-radius:999px; background:rgba(255,255,255,0.16); outline:none; cursor:pointer;
+  }
+  .volume-wrap input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:12px; height:12px; border-radius:50%;
+    background:#fff; cursor:pointer;
+  }
+  .volume-wrap input[type="range"]::-moz-range-thumb{
+    width:12px; height:12px; border-radius:50%; background:#fff; border:none; cursor:pointer;
+  }
+</style>
+  <script>
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('keydown', (e) => {
+      const key = e.key;
+      const blocked =
+        key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(key)) ||
+        (e.ctrlKey && ['U', 'u'].includes(key)) ||
+        (e.metaKey && e.altKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(key));
+      if (blocked) e.preventDefault();
+    });
+  </script>
+</head>
+<body>
+
+<div class="entry-gate" id="entryGate">
+  <div class="entry-gate-bg-wrap">
+    <div class="entry-gate-bg" id="entryGateBg"></div>
+    <video class="entry-gate-bg-video" id="entryGateBgVideo" autoplay loop muted playsinline>
+      <source id="entryGateBgVideoSource" src="" type="video/mp4">
+    </video>
+  </div>
+  <div class="entry-glow-orbs">
+    <div class="entry-glow-orb orb-a"></div>
+    <div class="entry-glow-orb orb-b"></div>
+  </div>
+  <div class="avatar-wrap">
+    <img id="gateAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="avatar">
+  </div>
+  <div class="name" id="gateName">Loading...</div>
+  <div class="tagline" id="gateTagline">clovs to, sama ka?</div>
+  <button class="entry-btn" id="entryBtn">Enter <i class="fas fa-arrow-right"></i></button>
+  <div class="entry-hint">tap anywhere to continue</div>
+</div>
+
+<div class="bg-image" id="bgImage" style="display:none;"></div>
+<video class="bg-video" id="bgVideo" style="display:none;" autoplay loop muted playsinline>
+  <source id="bgVideoSource" src="" type="video/mp4">
+</video>
+<div class="bg-dark-overlay" id="bgDarkOverlay"></div>
+<div class="grunge">
+  <span class="w1" id="grungeName1">CLOVS</span>
+  <span class="w2" id="grungeMotto">in we trust</span>
+  <span class="w3" id="grungeName2">CLOVS</span>
+</div>
+<div class="noise"></div>
+<div class="glow-orbs">
+  <div class="glow-orb orb-a"></div>
+  <div class="glow-orb orb-b"></div>
+</div>
+<div class="sparkles" id="sparkles"></div>
+<div class="snow" id="snow"></div>
+<div class="comet"></div>
+
+<div class="icon-row">
+  <a href="index.html" class="back-link" title="Back to main site"><i class="fas fa-arrow-left"></i></a>
+  <button class="settings-btn" id="settingsBtn" title="Customize"><i class="fas fa-gear"></i></button>
+</div>
+
+<div class="active-widget" id="activeWidget">
+  <div class="active-widget-header"><span class="dot"></span> Active</div>
+  <div class="active-widget-list" id="profileActiveList">
+    <div class="active-widget-empty"><i class="fas fa-spinner fa-spin"></i></div>
+  </div>
+</div>
+
+<div class="settings-overlay" id="settingsOverlay"></div>
+<div class="settings-panel" id="settingsPanel">
+  <button class="settings-close" id="settingsClose"><i class="fas fa-xmark"></i></button>
+  <div class="settings-title"><span class="settings-title-dot"></span> Customize</div>
+
+  <div class="setting-row">
+    <div class="setting-label"><span>Background Blur</span><span class="val" id="blurVal">0</span></div>
+    <input type="range" id="blurRange" min="0" max="20" value="0">
+  </div>
+
+  <div class="setting-row">
+    <div class="setting-label"><span>Card Transparency</span><span class="val" id="transVal">55%</span></div>
+    <input type="range" id="transRange" min="10" max="100" value="55">
+  </div>
+
+  <div class="setting-row toggle-row">
+    <div class="setting-label"><span>CRT Effect</span></div>
+    <label class="switch"><input type="checkbox" id="crtToggle"><span class="slider"></span></label>
+  </div>
+
+  <div class="setting-row toggle-row">
+    <div class="setting-label"><span>Reduce Motion</span></div>
+    <label class="switch"><input type="checkbox" id="motionToggle"><span class="slider"></span></label>
+  </div>
+
+  <div class="setting-row toggle-row">
+    <div class="setting-label"><span>Hide Music Dock</span></div>
+    <label class="switch"><input type="checkbox" id="hideMusicToggle"><span class="slider"></span></label>
+  </div>
+
+  <div class="setting-row">
+    <div class="setting-label"><span>Accent Tint</span></div>
+    <div class="tint-row" id="tintRow">
+      <div class="tint-dot" data-color="#a855f7" style="background:#a855f7;color:#a855f7;"></div>
+      <div class="tint-dot" data-color="#f5f5f5" style="background:#f5f5f5;color:#f5f5f5;"></div>
+      <div class="tint-dot" data-color="#22d3ee" style="background:#22d3ee;color:#22d3ee;"></div>
+      <div class="tint-dot selected" data-color="#ff3b3b" style="background:#ff3b3b;color:#ff3b3b;"></div>
+      <div class="tint-dot" data-color="#84cc16" style="background:#84cc16;color:#84cc16;"></div>
+    </div>
+  </div>
+
+  <div class="settings-footer">
+    <button class="settings-reset" id="settingsReset">Reset</button>
+    <div class="settings-hint">Press <kbd>?</kbd></div>
+  </div>
+</div>
+<div class="crt-overlay" id="crtOverlay"></div>
+
+<div class="card">
+  <div class="avatar-wrap">
+    <img id="avatarImg" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="avatar">
+    <div class="status-dot-ring offline" id="statusRing"></div>
+  </div>
+
+  <div class="name" id="nameText">Loading...</div>
+  <div class="tagline" id="taglineText">clovs.acp member</div>
+
+  <div class="status-pill">
+    <span class="dot offline" id="statusDot"></span>
+    <span id="statusText">offline</span>
+  </div>
+
+  <div class="socials" id="socialsRow"></div>
+
+  <div class="divider"></div>
+
+  <div class="card-footer">
+    <div class="footer-icons">
+      <button id="linkBtn" title="Discord profile"><i class="fas fa-link"></i></button>
+      <button id="shareBtn" title="Copy link"><i class="fas fa-share-nodes"></i></button>
+    </div>
+    <div class="views"><i class="fas fa-eye"></i> <span id="viewCount">0</span></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Link copied</div>
+
+<div class="music-bar paused" id="musicBar" style="display:none;">
+  <button class="ctrl" id="prevBtn"><i class="fas fa-backward-step"></i></button>
+  <button class="ctrl play" id="playBtn"><i class="fas fa-play"></i></button>
+  <button class="ctrl" id="nextBtn"><i class="fas fa-forward-step"></i></button>
+  <div class="meta">
+    <div class="track" id="trackName">—</div>
+    <div class="time" id="trackTime">0:00</div>
+  </div>
+  <div class="eq"><span></span><span></span><span></span><span></span></div>
+  <div class="volume-wrap">
+    <button class="ctrl" id="muteBtn"><i class="fas fa-volume-high"></i></button>
+    <input type="range" id="volumeRange" min="0" max="100" value="70">
+  </div>
+</div>
+
+<audio id="trackAudio" preload="none"></audio>
+
+<script src="config.js"></script>
+<script>
+  // Member data (tagline, socials, music, background, portfolioLink)
+  // now lives in config.js as MEMBERS[id] — edit it there.
+
+  // Safety net: if config.js didn't load (wrong filename/location, or a
+  // duplicate like "config (1).js" sitting next to it instead), don't
+  // let the whole page silently break — warn on-screen and fall back
+  // to empty defaults so the rest of the page still works.
+  // Local files opened by double-click (file://) have known browser
+  // restrictions that break API fetches and page navigation. Warn
+  // clearly instead of leaving things silently broken.
+  if (window.location.protocol === 'file:') {
+    window.addEventListener('DOMContentLoaded', () => {
+      const warn = document.createElement('div');
+      warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#b45309;color:#fff;text-align:center;padding:10px;font-family:sans-serif;font-size:0.8rem;';
+      warn.innerHTML = 'You\'re opening this as a local file — some things (data, links) may break. Serve it with a local server instead, e.g. <code>python -m http.server</code> then open <code>http://localhost:8000</code>.';
+      document.body.prepend(warn);
+    });
+  }
+
+  if (typeof MEMBERS === 'undefined') {
+    console.error('config.js did not load — make sure config.js is in the same folder as this file, named exactly "config.js".');
+    window.MEMBERS = {};
+    window.DEFAULT_TRACK = { name: '', src: '' };
+    window.DEFAULT_BACKGROUND = '';
+    window.API_BASE = 'https://api.lanyard.rest/v1/users/';
+    window.addEventListener('DOMContentLoaded', () => {
+      const warn = document.createElement('div');
+      warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#b91c1c;color:#fff;text-align:center;padding:10px;font-family:sans-serif;font-size:0.85rem;';
+      warn.textContent = 'config.js failed to load — check it\'s in the same folder as this file and named exactly "config.js" (not "config (1).js").';
+      document.body.prepend(warn);
+    });
+  }
+
+  function resolveIdFromSlug(){
+    const hash = decodeURIComponent(window.location.hash || '').replace(/^#/, '').trim();
+    if (!hash || typeof MEMBERS === 'undefined') return null;
+    for (const key in MEMBERS) {
+      const rawSlug = (MEMBERS[key].slug || '').replace(/^#/, '').trim();
+      if (rawSlug && rawSlug.toLowerCase() === hash.toLowerCase()) return key;
+    }
+    return null;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || resolveIdFromSlug();
+
+  function getStatusClass(status){
+    if (status === 'online') return 'online';
+    if (status === 'idle') return 'idle';
+    if (status === 'dnd') return 'dnd';
+    return 'offline';
+  }
+
+  function getAvatarUrl(user){
+    if (!user || !user.discord_user) return 'https://cdn.discordapp.com/embed/avatars/0.png';
+    const { id, avatar } = user.discord_user;
+    return avatar
+      ? `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp?size=256`
+      : `https://cdn.discordapp.com/embed/avatars/${parseInt(id) % 5}.png`;
+  }
+
+  async function fetchUser(uid){
+    try {
+      const res = await fetch(API_BASE + uid);
+      const data = await res.json();
+      return data.success ? data.data : null;
+    } catch (err) {
+      console.error('Error fetching Lanyard ID:', uid, err);
+      return null;
+    }
+  }
+
+  function getAllMemberIds(){
+    const all = [
+      ...(typeof HALL_OF_FAME_IDS !== 'undefined' ? HALL_OF_FAME_IDS : []),
+      ...(typeof WE_RUN_TS_IDS !== 'undefined' ? WE_RUN_TS_IDS : []),
+      ...(typeof XCLSV_IDS !== 'undefined' ? XCLSV_IDS : []),
+      ...(typeof MEMBER_IDS !== 'undefined' ? MEMBER_IDS : [])
+    ].filter(Boolean);
+    return [...new Set(all)];
+  }
+
+  function getPortfolioLink(uid){
+    const member = MEMBERS[uid];
+    const custom = member && member.portfolioLink;
+    if (custom && custom.trim() !== '') return custom;
+    const slug = member && member.slug && member.slug.trim();
+    return slug ? `clovs_acp.html#${slug}` : `clovs_acp.html?id=${uid}`;
+  }
+
+  async function loadActiveWidget(){
+    const list = document.getElementById('profileActiveList');
+    if (!list) return;
+
+    const ids = getAllMemberIds();
+    if (ids.length === 0) {
+      list.innerHTML = `<div class="active-widget-empty">no members configured</div>`;
+      return;
+    }
+
+    const users = await Promise.all(ids.map(uid => fetchUser(uid)));
+    const active = ids
+      .map((uid, i) => ({ uid, user: users[i] }))
+      .filter(r => r.user && r.user.discord_status !== 'offline');
+
+    const order = { online: 0, idle: 1, dnd: 2 };
+    active.sort((a, b) => (order[a.user.discord_status] ?? 3) - (order[b.user.discord_status] ?? 3));
+
+    if (active.length === 0) {
+      list.innerHTML = `<div class="active-widget-empty">no one's around</div>`;
+      return;
+    }
+
+    list.innerHTML = active.map(({ uid, user }) => {
+      const u = user.discord_user;
+      const name = u.global_name || u.username;
+      const status = getStatusClass(user.discord_status);
+      const link = getPortfolioLink(uid);
+
+      let activityHtml, activityClass = '';
+      if (user.listening_to_spotify && user.spotify) {
+        activityHtml = `<i class="fas fa-music"></i> ${user.spotify.song}`;
+        activityClass = 'is-listening';
+      } else {
+        const game = user.activities?.find(a => a.type === 0);
+        if (game) {
+          activityHtml = `<i class="fas fa-gamepad"></i> ${game.name}`;
+          activityClass = 'is-playing';
+        } else if (status === 'idle') {
+          activityHtml = `<i class="fas fa-moon"></i> idle`;
+        } else {
+          activityHtml = 'online';
+        }
+      }
+
+      return `
+        <a href="${link}" class="active-widget-row">
+          <div class="active-widget-avatar-wrap">
+            <img src="${getAvatarUrl(user)}" class="active-widget-avatar" alt="${name}">
+            <div class="active-widget-dot ${status}"></div>
+          </div>
+          <div class="active-widget-info">
+            <div class="active-widget-name">${name}</div>
+            <div class="active-widget-activity ${activityClass}">${activityHtml}</div>
+          </div>
+        </a>
+      `;
+    }).join('');
+  }
+
+  function buildSocials(uid){
+    const links = (MEMBERS[uid] && MEMBERS[uid].socials) || {};
+    const icons = {
+      instagram: 'fa-brands fa-instagram',
+      tiktok: 'fa-brands fa-tiktok',
+      youtube: 'fa-brands fa-youtube',
+      spotify: 'fa-brands fa-spotify',
+      discord: 'fa-brands fa-discord'
+    };
+    const row = document.getElementById('socialsRow');
+    row.innerHTML = '';
+    Object.keys(icons).forEach(key => {
+      const url = links[key];
+      if (!url) return;
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.innerHTML = `<i class="${icons[key]}"></i>`;
+      row.appendChild(a);
+    });
+    if (row.children.length === 0) {
+      row.innerHTML = `<span style="color:var(--text-dim);font-size:0.8rem;">no links added yet</span>`;
+    }
+  }
+
+  function initVolumeControl(audio){
+    const volumeRange = document.getElementById('volumeRange');
+    const muteBtn = document.getElementById('muteBtn');
+    const wrap = document.querySelector('.volume-wrap');
+    if (!volumeRange || !muteBtn) return;
+
+    const savedVol = parseInt(localStorage.getItem('clovs_volume') || '70', 10);
+    audio.volume = savedVol / 100;
+    volumeRange.value = savedVol;
+
+    let lastVol = savedVol > 0 ? savedVol : 70;
+
+    function iconFor(vol){
+      if (vol === 0) return 'fa-volume-xmark';
+      if (vol < 50) return 'fa-volume-low';
+      return 'fa-volume-high';
+    }
+    function updateIcon(vol){
+      muteBtn.innerHTML = `<i class="fas ${iconFor(vol)}"></i>`;
+    }
+    updateIcon(savedVol);
+
+    volumeRange.addEventListener('input', () => {
+      const vol = parseInt(volumeRange.value, 10);
+      audio.volume = vol / 100;
+      updateIcon(vol);
+      localStorage.setItem('clovs_volume', vol);
+      if (vol > 0) lastVol = vol;
+    });
+
+    muteBtn.addEventListener('click', () => {
+      const current = parseInt(volumeRange.value, 10);
+      if (current > 0) {
+        lastVol = current;
+        volumeRange.value = 0;
+        audio.volume = 0;
+        updateIcon(0);
+        localStorage.setItem('clovs_volume', 0);
+      } else {
+        volumeRange.value = lastVol;
+        audio.volume = lastVol / 100;
+        updateIcon(lastVol);
+        localStorage.setItem('clovs_volume', lastVol);
+      }
+    });
+
+    if (wrap) wrap.style.display = 'flex';
+  }
+
+  function initMusic(uid, user){
+    const bar = document.getElementById('musicBar');
+    const trackName = document.getElementById('trackName');
+    const trackTime = document.getElementById('trackTime');
+    const audio = document.getElementById('trackAudio');
+    const playBtn = document.getElementById('playBtn');
+    const wrap = document.querySelector('.volume-wrap');
+
+    const memberMusic = MEMBERS[uid] && MEMBERS[uid].music;
+    const custom = (memberMusic && memberMusic.src) ? memberMusic : DEFAULT_TRACK;
+    if (custom && custom.src) {
+      bar.style.display = 'flex';
+      trackName.textContent = custom.name || 'track';
+      audio.src = custom.src;
+      initVolumeControl(audio);
+
+      function fmt(t){
+        if (!isFinite(t)) return '0:00';
+        const m = Math.floor(t / 60), s = Math.floor(t % 60);
+        return `${m}:${s.toString().padStart(2,'0')}`;
+      }
+      audio.addEventListener('timeupdate', () => { trackTime.textContent = fmt(audio.currentTime); });
+      audio.addEventListener('play', () => { bar.classList.remove('paused'); playBtn.innerHTML = '<i class="fas fa-pause"></i>'; });
+      audio.addEventListener('pause', () => { bar.classList.add('paused'); playBtn.innerHTML = '<i class="fas fa-play"></i>'; });
+
+      playBtn.addEventListener('click', () => { audio.paused ? audio.play().catch(()=>{}) : audio.pause(); });
+      document.getElementById('prevBtn').addEventListener('click', () => { audio.currentTime = 0; });
+      document.getElementById('nextBtn').addEventListener('click', () => { audio.currentTime = 0; audio.play().catch(()=>{}); });
+      return;
+    }
+
+    // Fall back to read-only "now playing" from Lanyard's Spotify data
+    if (user && user.listening_to_spotify && user.spotify) {
+      bar.style.display = 'flex';
+      bar.classList.remove('paused');
+      trackName.textContent = `${user.spotify.song} — ${user.spotify.artist}`;
+      trackTime.textContent = 'listening on spotify';
+      playBtn.innerHTML = '<i class="fas fa-spotify"></i>';
+      playBtn.style.cursor = 'default';
+      document.getElementById('prevBtn').style.visibility = 'hidden';
+      document.getElementById('nextBtn').style.visibility = 'hidden';
+      if (wrap) wrap.style.display = 'none';
+    }
+  }
+
+  function trackView(uid){
+    if (!uid) return 0;
+    const key = 'profile_views_' + uid;
+    const count = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+    localStorage.setItem(key, count);
+    return count;
+  }
+
+  function spawnSparkles(){
+    const wrap = document.getElementById('sparkles');
+    for (let i=0;i<25;i++){
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.style.left = Math.random()*100 + 'vw';
+      s.style.top = Math.random()*100 + 'vh';
+      s.style.animationDelay = (Math.random()*3) + 's';
+      wrap.appendChild(s);
+    }
+  }
+
+  function spawnSnow(){
+    const wrap = document.getElementById('snow');
+    if (!wrap) return;
+    const count = 60;
+    for (let i=0;i<count;i++){
+      const flake = document.createElement('div');
+      flake.className = 'snowflake';
+      const size = 2 + Math.random()*4;
+      flake.style.width = size + 'px';
+      flake.style.height = size + 'px';
+      flake.style.left = Math.random()*100 + 'vw';
+      flake.style.setProperty('--drift', (Math.random()*80 - 40) + 'px');
+      flake.style.animationDuration = (8 + Math.random()*10) + 's';
+      flake.style.animationDelay = (Math.random()*10) + 's';
+      flake.style.opacity = 0.3 + Math.random()*0.6;
+      wrap.appendChild(flake);
+    }
+  }
+
+  function applyBackground(uid){
+    const bgUrl = (MEMBERS[uid] && MEMBERS[uid].background) || DEFAULT_BACKGROUND;
+    const bgEl = document.getElementById('bgImage');
+    const videoEl = document.getElementById('bgVideo');
+    const videoSource = document.getElementById('bgVideoSource');
+    const overlayEl = document.getElementById('bgDarkOverlay');
+    const grungeEl = document.querySelector('.grunge');
+
+    if (!bgUrl || bgUrl.trim() === '') {
+      bgEl.style.display = 'none';
+      videoEl.pause();
+      videoEl.style.display = 'none';
+      overlayEl.style.display = 'none';
+      grungeEl.style.display = 'block';
+      return;
+    }
+
+    grungeEl.style.display = 'none'; // hide the built-in grunge look in favor of the custom background
+    overlayEl.style.display = 'block';
+
+    if (VIDEO_EXT_RE.test(bgUrl.trim())) {
+      bgEl.style.display = 'none';
+      videoSource.src = bgUrl;
+      videoEl.load();
+      videoEl.style.display = 'block';
+      videoEl.play().catch(() => { /* autoplay may be blocked until interaction */ });
+    } else {
+      videoEl.pause();
+      videoEl.style.display = 'none';
+      bgEl.style.backgroundImage = `url('${bgUrl}')`;
+      bgEl.style.display = 'block';
+    }
+  }
+
+  // entry gate uses the member's own background too — image, gif, or video
+  // (mp4/webm/mov) all work — blurred + glowing for atmosphere.
+  const VIDEO_EXT_RE = /\.(mp4|webm|mov|m4v|ogv)(\?.*)?$/i;
+
+  function applyGateBackground(uid){
+    const bgUrl = (MEMBERS[uid] && MEMBERS[uid].background) || DEFAULT_BACKGROUND;
+    const gateBgEl = document.getElementById('entryGateBg');
+    const gateVideoEl = document.getElementById('entryGateBgVideo');
+    const gateVideoSource = document.getElementById('entryGateBgVideoSource');
+
+    if (!bgUrl || bgUrl.trim() === '') {
+      gateBgEl.style.backgroundImage = '';
+      gateBgEl.style.display = 'block';
+      gateVideoEl.pause();
+      gateVideoEl.style.display = 'none';
+      return;
+    }
+
+    if (VIDEO_EXT_RE.test(bgUrl.trim())) {
+      gateBgEl.style.display = 'none';
+      gateVideoSource.src = bgUrl;
+      gateVideoEl.load();
+      gateVideoEl.style.display = 'block';
+      gateVideoEl.play().catch(() => { /* autoplay may be blocked until interaction */ });
+    } else {
+      gateVideoEl.pause();
+      gateVideoEl.style.display = 'none';
+      gateBgEl.style.display = 'block';
+      gateBgEl.style.backgroundImage = `url('${bgUrl}')`;
+    }
+  }
+
+  async function loadProfile(){
+    if (!id){
+      document.getElementById('nameText').textContent = 'No member specified';
+      document.getElementById('taglineText').textContent = 'add ?id=DISCORD_ID to the URL';
+      return;
+    }
+
+    document.getElementById('linkBtn').addEventListener('click', () => {
+      const socials = (MEMBERS[id] && MEMBERS[id].socials) || {};
+      window.open(socials.discord || `https://discord.com/users/${id}`, '_blank');
+    });
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1800);
+      });
+    });
+
+    document.getElementById('viewCount').textContent = trackView(id);
+    document.getElementById('taglineText').textContent = (MEMBERS[id] && MEMBERS[id].tagline) || 'clovs.acp member';
+    document.getElementById('gateTagline').textContent = (MEMBERS[id] && MEMBERS[id].tagline) || 'clovs to, sama ka?';
+    buildSocials(id);
+    applyBackground(id);
+    applyGateBackground(id);
+
+    try {
+      const res = await fetch(API_BASE + id);
+      const data = await res.json();
+      const user = data.success ? data.data : null;
+
+      if (user) {
+        const u = user.discord_user;
+        const name = u.global_name || u.username;
+        document.title = name;
+        document.getElementById('nameText').textContent = name;
+        document.getElementById('gateName').textContent = name;
+        const avatarUrl = getAvatarUrl(user);
+        document.getElementById('avatarImg').src = avatarUrl;
+        document.getElementById('gateAvatar').src = avatarUrl;
+        document.getElementById('faviconLink').href = avatarUrl;
+
+        const status = getStatusClass(user.discord_status);
+        document.getElementById('statusRing').className = 'status-dot-ring ' + status;
+        document.getElementById('statusDot').className = 'dot ' + status;
+        document.getElementById('statusText').textContent = status;
+
+        document.getElementById('grungeName1').textContent = name.toUpperCase();
+        document.getElementById('grungeName2').textContent = name.toUpperCase();
+        document.getElementById('grungeMotto').textContent = `in ${name} we trust`;
+
+        initMusic(id, user);
+      } else {
+        document.getElementById('nameText').textContent = 'Member';
+      }
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+      document.getElementById('nameText').textContent = 'Member';
+    }
+  }
+
+  spawnSparkles();
+  spawnSnow();
+  loadProfile();
+  loadActiveWidget();
+
+  // ===== Entry gate =====
+  (function initEntryGate(){
+    const gate = document.getElementById('entryGate');
+    if (!gate) return;
+    let dismissed = false;
+    function dismiss(){
+      if (dismissed) return;
+      dismissed = true;
+      gate.classList.add('hidden');
+    }
+    gate.addEventListener('click', dismiss);
+    document.getElementById('entryBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      dismiss();
+    });
+  })();
+
+  // ===== Settings panel =====
+  (function initSettings(){
+    const DEFAULTS = { blur: 0, trans: 55, crt: false, motion: false, hideMusic: false, tint: '#ff3b3b' };
+    let settings = { ...DEFAULTS };
+
+    try {
+      const saved = JSON.parse(localStorage.getItem('clovs_settings') || 'null');
+      if (saved) settings = { ...DEFAULTS, ...saved };
+    } catch (e) { /* ignore corrupt storage */ }
+
+    const panel = document.getElementById('settingsPanel');
+    const overlay = document.getElementById('settingsOverlay');
+    const btn = document.getElementById('settingsBtn');
+    const closeBtn = document.getElementById('settingsClose');
+    const blurRange = document.getElementById('blurRange');
+    const blurVal = document.getElementById('blurVal');
+    const transRange = document.getElementById('transRange');
+    const transVal = document.getElementById('transVal');
+    const crtToggle = document.getElementById('crtToggle');
+    const motionToggle = document.getElementById('motionToggle');
+    const hideMusicToggle = document.getElementById('hideMusicToggle');
+    const resetBtn = document.getElementById('settingsReset');
+    const tintDots = document.querySelectorAll('.tint-dot');
+    const bgImage = document.getElementById('bgImage');
+    const bgVideo = document.getElementById('bgVideo');
+    const musicBar = document.getElementById('musicBar');
+
+    function persist(){
+      localStorage.setItem('clovs_settings', JSON.stringify(settings));
+    }
+
+    function apply(){
+      // background blur
+      const bgFilter = `brightness(0.45) saturate(0.9) blur(${settings.blur}px)`;
+      bgImage.style.filter = bgFilter;
+      if (bgVideo) bgVideo.style.filter = bgFilter;
+      blurRange.value = settings.blur;
+      blurVal.textContent = settings.blur;
+
+      // card transparency
+      document.documentElement.style.setProperty('--card', `rgba(20,20,20,${(settings.trans/100).toFixed(2)})`);
+      transRange.value = settings.trans;
+      transVal.textContent = settings.trans + '%';
+
+      // CRT
+      document.body.classList.toggle('crt-on', settings.crt);
+      crtToggle.checked = settings.crt;
+
+      // reduce motion
+      document.body.classList.toggle('reduce-motion', settings.motion);
+      motionToggle.checked = settings.motion;
+
+      // hide music dock
+      musicBar.classList.toggle('force-hidden', settings.hideMusic);
+      hideMusicToggle.checked = settings.hideMusic;
+
+      // accent tint
+      document.documentElement.style.setProperty('--accent-tint', settings.tint);
+      document.documentElement.style.setProperty('--accent', settings.tint);
+      tintDots.forEach(dot => dot.classList.toggle('selected', dot.dataset.color === settings.tint));
+    }
+
+    function openPanel(){
+      panel.classList.add('open');
+      overlay.classList.add('open');
+      btn.classList.add('active');
+    }
+    function closePanel(){
+      panel.classList.remove('open');
+      overlay.classList.remove('open');
+      btn.classList.remove('active');
+    }
+
+    btn.addEventListener('click', () => {
+      panel.classList.contains('open') ? closePanel() : openPanel();
+    });
+    closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', closePanel);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '?' ) { panel.classList.contains('open') ? closePanel() : openPanel(); }
+      if (e.key === 'Escape') closePanel();
+    });
+
+    blurRange.addEventListener('input', () => {
+      settings.blur = parseInt(blurRange.value, 10);
+      apply(); persist();
+    });
+    transRange.addEventListener('input', () => {
+      settings.trans = parseInt(transRange.value, 10);
+      apply(); persist();
+    });
+    crtToggle.addEventListener('change', () => {
+      settings.crt = crtToggle.checked;
+      apply(); persist();
+    });
+    motionToggle.addEventListener('change', () => {
+      settings.motion = motionToggle.checked;
+      apply(); persist();
+    });
+    hideMusicToggle.addEventListener('change', () => {
+      settings.hideMusic = hideMusicToggle.checked;
+      apply(); persist();
+    });
+    tintDots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        settings.tint = dot.dataset.color;
+        apply(); persist();
+      });
+    });
+    resetBtn.addEventListener('click', () => {
+      settings = { ...DEFAULTS };
+      apply(); persist();
+    });
+
+    apply();
+  })();
+
+  // ===== Moving / tilting card =====
+  (function initCardTilt(){
+    const card = document.querySelector('.card');
+    if (!card) return;
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    if (isTouch) return;
+
+    let raf = null;
+
+    function onMove(e){
+      if (document.body.classList.contains('reduce-motion')) return;
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const rotateY = (x - 0.5) * 14;
+      const rotateX = (0.5 - y) * 14;
+
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        card.classList.remove('settling');
+        card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+        card.style.setProperty('--glare-x', (x * 100) + '%');
+        card.style.setProperty('--glare-y', (y * 100) + '%');
+        card.style.setProperty('--glare-o', '1');
+      });
+    }
+
+    function onLeave(){
+      card.classList.add('settling');
+      card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0)';
+      card.style.setProperty('--glare-o', '0');
+    }
+
+    card.addEventListener('mousemove', onMove);
+    card.addEventListener('mouseleave', onLeave);
+  })();
+</script>
+</body>
+</html>
