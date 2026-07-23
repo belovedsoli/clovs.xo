@@ -90,7 +90,7 @@ const MEMBERS = {
     slug: 'astra', tagline: 'ANTI BITCHES', socials: { instagram:'  https://www.instagram.com/die4.777?igsh=dmRudGowa25qdzZk', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'kleeko cute', src:'kleeko.mp3' }, background: 'kleeko.mp4', portfolioLink: ''
   },
   '1505594070565654778': {
-    slug: 'ziye', tagline: 'mind over matter', socials: { instagram:'https://www.instagram.com/_zycl6?igsh=MWR0ZHgxMTc4eXo4bA==', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'oleeko', src:'sinf.mp3' }, background: 'oleeko.png', portfolioLink: ''
+    slug: 'ziye', tagline: 'mind over matter', socials: { instagram:'https://www.instagram.com/_zycl6?igsh=MWR0ZHgxMTc4eXo4bA==', tiktok:'', youtube:'', spotify:'', discord:'' }, music: { name:'oleeko', src:'oleeko.mp3' }, background: 'oleeko.png', portfolioLink: ''
   },
   '1051531791581859960': {
     slug: 'tia', tagline: ' to those who love, will be loved ', socials: { instagram:'https://www.instagram.com/tialucies?igsh=MXVlY3VzZTFxMm45bA== ', tiktok:' https://www.tiktok.com/@poemsandra?_r=1&_t=ZS-98BdMRhQnzA', youtube:'', spotify:'', discord:'' }, music: { name:'tia', src:'tia.mp3' }, background: 'tia.png', portfolioLink: ''
